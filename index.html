@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script type="text/javascript">
+        window.languagePluginUrl = 'https://pyodide-cdn2.iodide.io/v0.15.0/full/';
+    </script>
+    <script src="https://pyodide-cdn2.iodide.io/v0.15.0/full/pyodide.js"></script>
+</head>
+
+<body>
+    <script type="text/javascript">
+    var client = new XMLHttpRequest();
+    client.open('GET', '/main.py');
+
+    client.onreadystatechange = function() {
+        languagePluginLoader.then(() => {
+            return pyodide.loadPackage(['micropip'])
+        }).then(() => {
+            pyodide.runPython(client.responseText);
+        })
+    }
+
+    client.send();
+
+  </script>
+
+    <div id="textfield"></div>
+    <div id="pyplotdiv"><img id="pyplotfigure"/></div>
+
+
+</body>
