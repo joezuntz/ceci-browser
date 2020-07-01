@@ -19,6 +19,8 @@
 
     <script type="text/javascript">
     var client = new XMLHttpRequest();
+
+
     client.open('GET', 'main.py');
     client.onreadystatechange = function() {
         if(client.readyState === XMLHttpRequest.DONE){
@@ -26,7 +28,10 @@
             languagePluginLoader.then(() => {
                 return pyodide.loadPackage(['micropip'])
             }).then(() => {
-                return pyodide.runPython(client.responseText);
+                var hr = window.location.href;
+                base_url = hr.substring(0, hr.length - 10);
+                var cmd = "\nentry_point('" + base_url + "')"
+                return pyodide.runPython(client.responseText + cmd);
             }).then(() => {
                 console.log("Writing");
                 var nodes = pyodide.globals.nodes;

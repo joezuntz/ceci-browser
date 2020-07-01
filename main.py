@@ -4,17 +4,6 @@ import micropip
 nodes = []
 edges = []
 
-imports = [
-    "numpy",
-    "scipy",
-    # "networkx",
-    "setuptools-scm",
-    # need a pure-python version
-    "http://127.0.0.1:8000/PyYAML-5.3.1-cp37-cp37m-macosx_10_13_x86_64.whl",
-    # modified to remove some dependencies:
-    "http://127.0.0.1:8000/ceci-1.0.5-py3-none-any.whl",
-    "http://127.0.0.1:8000/txpipe-0.3-py3-none-any.whl",
-]
 
 def build_graph(config):
     import ceci
@@ -82,7 +71,17 @@ def main(*args):
 
 
 
-def entry_point():
+def entry_point(base_url):
+    imports = [
+        "numpy",
+        "scipy",
+        # "networkx",
+        "setuptools-scm",
+        # need a pure-python version
+        base_url + "/PyYAML-5.3.1-cp37-cp37m-macosx_10_13_x86_64.whl",
+        # modified to remove some dependencies:
+        base_url + "/ceci-1.0.5-py3-none-any.whl",
+        base_url + "/txpipe-0.3-py3-none-any.whl",
+    ]
     return micropip.install(imports).then(main)
 
-entry_point()
