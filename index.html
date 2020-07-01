@@ -4,28 +4,50 @@
     <script type="text/javascript">
         window.languagePluginUrl = 'https://pyodide-cdn2.iodide.io/v0.15.0/full/';
     </script>
+  <link rel="stylesheet" href="graphs.css">
     <script src="https://pyodide-cdn2.iodide.io/v0.15.0/full/pyodide.js"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="dagre.min.js"></script>
+    <script src="dagre-d3.min.js"></script>
+    <script src="mydag.js"></script>
+
 </head>
 
 <body>
+
+ <svg id="svg-canvas" width=5000 height=5000></svg>
+
     <script type="text/javascript">
     var client = new XMLHttpRequest();
     client.open('GET', '/main.py');
-
     client.onreadystatechange = function() {
-        languagePluginLoader.then(() => {
-            return pyodide.loadPackage(['micropip'])
-        }).then(() => {
-            pyodide.runPython(client.responseText);
-        })
+        if(client.readyState === XMLHttpRequest.DONE){
+
+            languagePluginLoader.then(() => {
+                return pyodide.loadPackage(['micropip'])
+            }).then(() => {
+                return pyodide.runPython(client.responseText);
+            }).then(() => {
+                console.log("Writing");
+                var nodes = pyodide.globals.nodes;
+                var edges = pyodide.globals.edges;
+                visualize_graph(nodes, edges)
+                // document.getElementById("svag").innerHTML=pyodide.globals.img_str;            
+            });
+        };
     }
 
     client.send();
-
   </script>
 
-    <div id="textfield"></div>
+<!--     <div id="textfield"></div>
     <div id="pyplotdiv"><img id="pyplotfigure"/></div>
+    <div id="svgdiv"></div>
+ -->
+<!--     <svg id="svag" width="800" height="800" >
 
+    </svg>
+ -->   
 
 </body>
+            

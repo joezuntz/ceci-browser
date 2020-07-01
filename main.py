@@ -1,29 +1,28 @@
 import micropip
-global img_str
-img_str = ""
+
+# globals
+nodes = []
+edges = []
 
 imports = [
     "numpy",
     "scipy",
-    "networkx",
-    # "setuptools-scm",
+    # "networkx",
+    "setuptools-scm",
     # need a pure-python version
     "http://127.0.0.1:8000/PyYAML-5.3.1-cp37-cp37m-macosx_10_13_x86_64.whl",
-    # modified to remove som dependencies:
+    # modified to remove some dependencies:
     "http://127.0.0.1:8000/ceci-1.0.5-py3-none-any.whl",
-    "http://127.0.0.1:8000/txpipe-0.3-py3-none-any.whl"
+    "http://127.0.0.1:8000/txpipe-0.3-py3-none-any.whl",
 ]
 
-def draw_pipeline(config):
-    import networkx as nx
+def build_graph(config):
     import ceci
-    import io
-    import base64
-    import matplotlib
-    matplotlib.use('agg')
-    import matplotlib.pyplot as plt
-    graph = nx.Graph()
+    import txpipe
     stages = [ceci.PipelineStage.get_stage(stage['name']) for stage in config['stages']]
+
+    edges = []
+    nodes = []
 
     # Nodes we have already added
     seen = set()
@@ -31,72 +30,56 @@ def draw_pipeline(config):
     # Add overall pipeline inputs
     inputs = config['inputs']
     for inp in inputs.keys():
-        graph.add_node(inp)
-        seen.add(inp)
+        if inp not in seen:
+            nodes.append([inp, 'gold'])
+            seen.add(inp)
 
     for stage in stages:
         # add the stage itself
-        graph.add_node(stage.name)
+        nodes.append([stage.name, 'orangered'])
         # connect that stage to its inputs
         for inp, _ in stage.inputs:
             if inp not in seen:
-                graph.add_node(inp)
+                nodes.append([inp, 'skyblue'])
                 seen.add(inp)
-            graph.add_edge(inp, stage.name)
+            edges.append([inp, stage.name])
         # and to its outputs
         for out, _ in stage.outputs:
             if out not in seen:
-                graph.add_node(out)
+                nodes.append([out, 'skyblue'])
                 seen.add(out)
-            graph.add_edge(stage.name, out)
+            edges.append([stage.name, out])
+    return nodes, edges
 
-    # finally, output the stage to file
-    fig = plt.figure()
-    nx.draw(graph)
-    buf = io.BytesIO()
-    fig.savefig(buf, format='png')
-    plt.close()
-    buf.seek(0)
-    print("Image draw_pipeline")
-    return base64.b64encode(buf.read()).decode('UTF-8')
-          # document.getElementById("pyplotfigure").src=pyodide.globals.img_str
 
 def download_file(url, path):
     import pyodide
     print(f"Downloading {url}")
-    sio = pyodide.open_url("http://127.0.0.1:8000/laptop_pipeline.yml")
+    sio = pyodide.open_url(url)
     sio.seek(0)
     open(path, 'w').write(sio.read())
 
 
 def main(*args):
     import ceci
-    from js import document
     import txpipe
-    import os
     import yaml
+    from js import document
+    import os
     print("imports complete")
 
     pipeline_file = "laptop_pipeline.yml"
     # Download the yaml files
-    download_file("http://127.0.0.1:8000/laptop_pipeline.yml", pipeline_file)
-    download_file("http://127.0.0.1:8000/laptop_config.yml", "laptop_config.yml")
-
+    download_file("/laptop_pipeline.yml", pipeline_file)
 
     # read the yaml files into a ceci pipeline
     config = yaml.safe_load(open(pipeline_file))
 
     # Make a pipeline image
-    img_data = draw_pipeline(config)
+    global nodes
+    global edges
+    nodes, edges = build_graph(config)
 
-    set_image("pyplotfigure", img_data)
-
-def set_image(div_id, img_data):
-    from js import document
-    global img_str
-    img_str = 'data:image/png;base64,' + img_data
-    div = document.getElementById(div_id)
-    div.src = img_str
 
 
 def entry_point():
