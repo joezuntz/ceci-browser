@@ -1,6 +1,7 @@
 import micropip
 
 # globals
+base_url = ""
 nodes = []
 edges = []
 
@@ -59,7 +60,7 @@ def main(*args):
 
     pipeline_file = "laptop_pipeline.yml"
     # Download the yaml files
-    download_file("/laptop_pipeline.yml", pipeline_file)
+    download_file(base_url + "/laptop_pipeline.yml", pipeline_file)
 
     # read the yaml files into a ceci pipeline
     config = yaml.safe_load(open(pipeline_file))
@@ -71,7 +72,9 @@ def main(*args):
 
 
 
-def entry_point(base_url):
+def entry_point(url):
+    global base_url
+    base_url = url
     imports = [
         "numpy",
         "scipy",
