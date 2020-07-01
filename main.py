@@ -83,5 +83,7 @@ def entry_point(base_url):
         base_url + "/ceci-1.0.5-py3-none-any.whl",
         base_url + "/txpipe-0.3-py3-none-any.whl",
     ]
+    for imp in imports:
+        print("Installing: ", imp)
     return micropip.install(imports).then(main)
 
